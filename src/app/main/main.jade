@@ -1,0 +1,64 @@
+.container-fluid
+
+  .row
+    .col-md-5
+      h2 Data & Options
+
+      div(bs-active-pane="tabs.activeTab" bs-tabs)
+        div(title="Input data" name="input" bs-pane)
+          div.text-danger(ng-show="errors.data") {{ errors.data }}
+          textarea.form-control(
+            rows="20"
+            ng-model="form.data"
+            name="data"
+          )
+          button.btn.btn-primary(ng-click="processData()") Process
+
+        div(title="Data table" name="table" bs-pane)
+          div(ng-hide="tableData.body.length > 0")
+            div.alert.alert-danger(role="alert") Paste some data on the 'Input data' tab and hit the 'Process' button.
+          div(ng-show="tableData.body.length > 0")
+            .checkbox
+              label
+                input(type="checkbox" title="Select all" ng-click="selectAll()" ng-checked="isAllSelected()")
+                | Select all
+
+            div.table-responsive(style="font-size: 90%; max-height: 500px")
+              table.table.table-bordered.table-hover.table-small
+                thead
+                  tr
+                    th(ng-repeat="h in tableData.header") {{ h }}
+                tbody
+                  tr(ng-repeat="row in tableData.body" ng-class="{active: row.isSelected}" ng-click="row.isSelected=!row.isSelected")
+                    //- td
+                    //-   input(type="checkbox" ng-model="row.isSelected" title="Select")
+                    td(ng-repeat="item in row.data") {{ item}}
+
+        div(title="Options" name="options" bs-pane)
+          br
+          form(role="form")
+            fieldset
+              legend Map
+              .checkbox
+                label
+                  input(type="checkbox" ng-model="options.fit" name="fit")
+                  span Fit
+                div.text-muted.small Instruct the map to fit its bounds around the markers.
+
+
+    .col-md-7
+      h2 Map
+      div Markers: {{ markers.length }}
+
+      p
+        span
+          button.btn.btn-default(ng-click="selectPrevious()" title="Select next point(s)")
+            i.fa.fa-arrow-left.fa-lg
+            span &nbsp;Previous
+        span.pull-right
+          button.btn.btn-default(ng-click="selectNext()" title="Select previous point(s)")
+            span Next&nbsp;
+            i.fa.fa-arrow-right.fa-lg
+
+      ui-gmap-google-map(center='map.center' zoom='map.zoom', control='map.control')
+        ui-gmap-markers(models="markers" coords="'self'" fit="options.fit" label-content="foo | bar")
