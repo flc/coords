@@ -13,6 +13,7 @@ angular.module 'app', [
 .config (uiGmapGoogleMapApiProvider) ->
   uiGmapGoogleMapApiProvider.configure
     # key: @@GOOGLE_MAPS_API_KEY
-    v: '3.18'
+    v: '3.20'
     libraries: 'weather,geometry,visualization'
+    # language: 'en'
 

@@ -43,22 +43,33 @@
                 label
                   input(type="checkbox" ng-model="options.fit" name="fit")
                   span Fit
-                div.text-muted.small Instruct the map to fit its bounds around the markers.
-
+                div.help-block Instruct the map to fit its bounds around the markers.
+              .form-group
+                label Delay between steps when simulate (in ms)
+                input.form-control(type="text" ng-model="options.simulateStepDelay")
+                div.help-block How much miliseconds to wait between simulation steps
 
     .col-md-7
       h2 Map
-      div Markers: {{ markers.length }}
+      div Markers: {{ map.markers.length }}
 
       p
-        span
+        span(ng-hide="simulatePromise")
+          button.btn.btn-primary(ng-click="simulateStart()" title="Simulate")
+            span &nbsp;Simulate
+        span(ng-show="simulatePromise")
+          button.btn.btn-danger(ng-click="simulateStop()" title="Stop simulate")
+            span &nbsp;Stop simulate
+        span.pull-right
           button.btn.btn-default(ng-click="selectPrevious()" title="Select next point(s)")
             i.fa.fa-arrow-left.fa-lg
             span &nbsp;Previous
-        span.pull-right
           button.btn.btn-default(ng-click="selectNext()" title="Select previous point(s)")
             span Next&nbsp;
             i.fa.fa-arrow-right.fa-lg
 
-      ui-gmap-google-map(center='map.center' zoom='map.zoom', control='map.control')
-        ui-gmap-markers(models="markers" coords="'self'" fit="options.fit" label-content="foo | bar")
+      ui-gmap-google-map(center='map.center' zoom='map.zoom', control='map.control' events='map.events' bounds='map.bounds' options='map.options')
+        ui-gmap-markers(models="map.markers" coords="'self'" fit="options.fit" options="'options'" events="map.markerEvents")
+          ui-gmap-windows(show="show")
+            div(ng-non-bindable) {{ title }}
+

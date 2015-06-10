@@ -1,7 +1,7 @@
 angular.module "app"
 
 
-.controller "MainCtrl", ($scope, _, maps) ->
+.controller "MainCtrl", ($scope, $interval, _, maps) ->
 
   $scope.processData = ->
     $scope.errors = {}
@@ -22,7 +22,7 @@ angular.module "app"
       'header': results.data[0]
       'body': body
     $scope.tableData.body[0].isSelected = true
-    $scope.genMarkers(centerMap=true)
+    $scope.genMarkers(fitMap=true)
     $scope.tabs.activeTab = "table"
 
   getSelected = ->
@@ -42,7 +42,7 @@ angular.module "app"
       return false
     $scope.tableData.body.length is getSelected().length
 
-  $scope.genMarkers = (centerMap=false) ->
+  $scope.genMarkers = (fitMap=false) ->
     markers = []
     selected = getSelected()
     for row, i in selected
@@ -50,15 +50,13 @@ angular.module "app"
       markers.push
         latitude: data[0]
         longitude: data[1]
-        title: "Timestamp: #{data[2]} | ID: #{data[3]}"
+        # options:
+        #   labelContent: "ID: #{data[3]}"
         id: data[3]
-        idKey: 'id'
-    $scope.markers = markers
-    if centerMap
-      if markers.length > 0
-        $scope.map.center =
-          latitude: markers[0].latitude
-          longitude: markers[0].longitude
+        title: "ID: #{data[3]} | Timestamp: #{data[2]}"
+    $scope.map.markers = markers
+    if fitMap
+      $scope.fitBounds()
 
   moveSelect = (type="next") ->
     selected = getSelected()
@@ -93,6 +91,28 @@ angular.module "app"
   $scope.selectPrevious = ->
     moveSelect('previous')
 
+  $scope.simulateStart = ->
+    $scope.deselectAll()
+    $scope.simulateRunning = true
+    $scope.simulatePromise = $interval (->
+      $scope.selectNext()
+      ), $scope.options.simulateStepDelay
+
+  $scope.simulateStop = ->
+    if $scope.simulatePromise
+      $interval.cancel($scope.simulatePromise)
+      $scope.simulatePromise = null
+
+  $scope.getBounds = ->
+    bounds = new maps.LatLngBounds()
+    for c, i in $scope.tableData.body
+      bounds.extend new maps.LatLng(c.data[0], c.data[1])
+    return bounds
+
+  $scope.fitBounds = ->
+    bounds = $scope.getBounds()
+    $scope.map.control.getGMap().fitBounds(bounds)
+
   init = ->
     sampleCSV = "lat,lon,timestamp,id\n" +
                 "47.52427566666667,19.1174815,2015-06-05 11:27:06+00:00,1\n" +
@@ -111,22 +131,34 @@ angular.module "app"
     $scope.form =
       data: sampleCSV
     $scope.errors = {}
-    $scope.options = {}
+    $scope.options =
+      fit: false
+      simulateStepDelay: 200
+    $scope.simulatePromise = null
     $scope.tableData = {
       'header': [],
       'body': [],
     }
     $scope.tabs =
       activeTab: "input"
-
     $scope.map =
       center:
         latitude: 47.49
         longitude: 19.04
       zoom: 6
+      # $scope.map.control.getGMap() and $scope.map.control.refresh() functions are available
       control: {}
+      options: {}
+      # events:
+      #   tilesloaded: (mapInstance) ->
+      #     $scope.$apply ->
+      #       $scope.mapInstance = mapInstance
+      markers: []
+      # markerEvents:
+      #   click: (marker, event, model, args) ->
+      #     console.log marker, 'clicked', event, model, args
+
     $scope.maps = maps
-    $scope.markers = []
 
     $scope.$watch "tableData.body", (->
       $scope.genMarkers()
