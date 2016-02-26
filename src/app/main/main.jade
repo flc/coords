@@ -29,7 +29,7 @@
                   )
                 | Select all
 
-            div.text-right(style="margin-top: -27px" title="Total distance calculated only from the path of the selected points") Distance: {{ main.calcDistanceSelected() | number:2 }} m
+            div.text-right(style="margin-top: -27px" title="Total distance calculated only from the path of the selected points") Distance (selection): {{ main.calcDistanceSelected() | number:2 }} m
 
             div.table-responsive(style="font-size: 85%; max-height: 500px")
               table.table.table-bordered.table-hover.table-small
@@ -58,7 +58,7 @@
 
     .col-md-6
       h2 Map
-      div Markers: {{ main.map.markers.length }} (selected: {{ main.getSelected().length }})
+      div Markers: {{ main.markers.length }} (selected: {{ main.getSelected().length }})
 
       p
         span(ng-hide="main.simulatePromise")
@@ -68,7 +68,7 @@
           button.btn.btn-danger(type="button" ng-click="main.simulateStop()" title="Stop simulate")
             span &nbsp;Stop simulate
         span
-          button.btn.btn-success(type="button" ng-click="main.fitBounds(true)" title="Adjust map bounds to show all visible markers")
+          button.btn.btn-success(type="button" ng-click="main.fitBounds(true)" title="Zoom map to selection")
             span &nbsp;Fit map
         span
           button.btn.btn-default(
@@ -98,12 +98,6 @@
           label="{{ marker.label }}"
           on-click="main.showMarkerInfo(event, marker)"
           )
-        //- info-window(
-        //-   ng-repeat="marker in main.map.markers"
-        //-   id="marker-{{ marker.id }}-info"
-        //-   )
-        //-   div(ng-non-bindable="")
-        //-     h4 {{ marker.data }}
         shape(
           ng-repeat="polyline in main.polylines"
           name="{{ polyline.name }}"
