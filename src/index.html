@@ -8,7 +8,6 @@
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
     <!-- build:css({.tmp/serve,src}) styles/vendor.css -->
-    <link rel="stylesheet" href="app/vendor.css">
     <!-- bower:css -->
     <!-- run `gulp inject` to automatically populate bower styles dependencies -->
     <!-- endbower -->
@@ -26,6 +25,9 @@
     <![endif]-->
 
     <div ui-view></div>
+
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.22&libraries=geometry,drawing&ext=.js" async defer>
+    </script>
 
     <!-- build:js(src) scripts/vendor.js -->
     <!-- bower:js -->

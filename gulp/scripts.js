@@ -1,20 +1,30 @@
 'use strict';
 
+var path = require('path');
 var gulp = require('gulp');
+var conf = require('./conf');
+
 var browserSync = require('browser-sync');
 
 var $ = require('gulp-load-plugins')();
 
-module.exports = function(options) {
-  gulp.task('scripts', function () {
-    return gulp.src(options.src + '/app/**/*.coffee')
-      .pipe($.sourcemaps.init())
-      .pipe($.coffeelint())
-      .pipe($.coffeelint.reporter())
-      .pipe($.coffee()).on('error', options.errorHandler('CoffeeScript'))
-      .pipe($.sourcemaps.write())
-      .pipe(gulp.dest(options.tmp + '/serve/app'))
-      .pipe(browserSync.reload({ stream: true }))
-      .pipe($.size());
-  });
+
+gulp.task('scripts-reload', function() {
+  return buildScripts()
+    .pipe(browserSync.stream());
+});
+
+gulp.task('scripts', function() {
+  return buildScripts();
+});
+
+function buildScripts() {
+  return gulp.src(path.join(conf.paths.src, '/app/**/*.coffee'))
+    .pipe($.sourcemaps.init())
+    .pipe($.coffeelint())
+    .pipe($.coffeelint.reporter())
+    .pipe($.coffee()).on('error', conf.errorHandler('CoffeeScript'))
+    .pipe($.sourcemaps.write())
+    .pipe(gulp.dest(path.join(conf.paths.tmp, '/serve/app')))
+    .pipe($.size())
 };

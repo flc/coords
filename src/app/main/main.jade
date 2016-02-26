@@ -1,75 +1,117 @@
 .container-fluid
 
   .row
-    .col-md-5
+    .col-md-6
       h2 Data & Options
 
-      div(bs-active-pane="tabs.activeTab" bs-tabs)
-        div(title="Input data" name="input" bs-pane)
-          div.text-danger(ng-show="errors.data") {{ errors.data }}
+      div(bs-active-pane="main.tabs.activeTab" bs-tabs)
+        div(data-title="Input data" name="input" bs-pane)
+          div.text-danger(ng-show="main.errors.data") {{ main.errors.data }}
           textarea.form-control(
             rows="20"
-            ng-model="form.data"
+            ng-model="main.form.data"
             name="data"
           )
-          button.btn.btn-primary(ng-click="processData()") Process
+          div(style="margin-top: 5px")
+            button.btn.btn-primary(ng-click="main.processData()") Process
 
-        div(title="Data table" name="table" bs-pane)
-          div(ng-hide="tableData.body.length > 0")
+        div(data-title="Data table" name="table" bs-pane)
+          div(ng-hide="main.tableData.body.length > 0")
             div.alert.alert-danger(role="alert") Paste some data on the 'Input data' tab and hit the 'Process' button.
-          div(ng-show="tableData.body.length > 0")
+          div(ng-show="main.tableData.body.length > 0")
             .checkbox
               label
-                input(type="checkbox" title="Select all" ng-click="selectAll()" ng-checked="isAllSelected()")
+                input(
+                  type="checkbox"
+                  title="Select all"
+                  ng-click="main.selectAll()"
+                  ng-checked="main.isAllSelected()"
+                  )
                 | Select all
 
-            div.table-responsive(style="font-size: 90%; max-height: 500px")
+            div.text-right(style="margin-top: -27px" title="Total distance calculated only from the path of the selected points") Distance: {{ main.calcDistanceSelected() | number:2 }} m
+
+            div.table-responsive(style="font-size: 85%; max-height: 500px")
               table.table.table-bordered.table-hover.table-small
                 thead
                   tr
-                    th(ng-repeat="h in tableData.header") {{ h }}
+                    th #
+                    th(ng-repeat="h in main.tableData.header") {{ h }}
                 tbody
-                  tr(ng-repeat="row in tableData.body" ng-class="{active: row.isSelected}" ng-click="row.isSelected=!row.isSelected")
-                    //- td
-                    //-   input(type="checkbox" ng-model="row.isSelected" title="Select")
-                    td(ng-repeat="item in row.data") {{ item}}
+                  tr(
+                    ng-repeat="row in main.tableData.body"
+                    ng-class="{active: row.isSelected}"
+                    ng-click="main.toggleSelect(row)"
+                    )
+                    td {{ $index }}
+                    td(ng-repeat="item in row.data") {{ item }}
 
-        div(title="Options" name="options" bs-pane)
+        div(data-title="Options" name="options" bs-pane)
           br
           form(role="form")
             fieldset
               legend Map
-              .checkbox
-                label
-                  input(type="checkbox" ng-model="options.fit" name="fit")
-                  span Fit
-                div.help-block Instruct the map to fit its bounds around the markers.
               .form-group
                 label Delay between steps when simulate (in ms)
-                input.form-control(type="text" ng-model="options.simulateStepDelay")
+                input.form-control(type="text" ng-model="main.options.simulateStepDelay")
                 div.help-block How much miliseconds to wait between simulation steps
 
-    .col-md-7
+    .col-md-6
       h2 Map
-      div Markers: {{ map.markers.length }}
+      div Markers: {{ main.map.markers.length }} (selected: {{ main.getSelected().length }})
 
       p
-        span(ng-hide="simulatePromise")
-          button.btn.btn-primary(ng-click="simulateStart()" title="Simulate")
+        span(ng-hide="main.simulatePromise")
+          button.btn.btn-primary(type="button" ng-click="main.simulateStart()" title="Simulate")
             span &nbsp;Simulate
-        span(ng-show="simulatePromise")
-          button.btn.btn-danger(ng-click="simulateStop()" title="Stop simulate")
+        span(ng-show="main.simulatePromise")
+          button.btn.btn-danger(type="button" ng-click="main.simulateStop()" title="Stop simulate")
             span &nbsp;Stop simulate
+        span
+          button.btn.btn-success(type="button" ng-click="main.fitBounds(true)" title="Adjust map bounds to show all visible markers")
+            span &nbsp;Fit map
+        span
+          button.btn.btn-default(
+            type="button"
+            ng-model="main.options.mapItems"
+            data-multiple="1"
+            data-animation="am-flip-x"
+            bs-options="item.value as item.label for item in main.options.mapItemOptions"
+            bs-select
+            placeholder=""
+            )
+            | &nbsp; <span class="caret"></span>
         span.pull-right
-          button.btn.btn-default(ng-click="selectPrevious()" title="Select next point(s)")
+          button.btn.btn-default(ng-click="main.selectPrevious()" title="Select next point(s)")
             i.fa.fa-arrow-left.fa-lg
             span &nbsp;Previous
-          button.btn.btn-default(ng-click="selectNext()" title="Select previous point(s)")
+          button.btn.btn-default(ng-click="main.selectNext()" title="Select previous point(s)")
             span Next&nbsp;
             i.fa.fa-arrow-right.fa-lg
 
-      ui-gmap-google-map(center='map.center' zoom='map.zoom', control='map.control' events='map.events' bounds='map.bounds' options='map.options')
-        ui-gmap-markers(models="map.markers" coords="'self'" fit="options.fit" options="'options'" events="map.markerEvents")
-          ui-gmap-windows(show="show")
-            div(ng-non-bindable) {{ title }}
+      ng-map.map(zoom="7" max-zoom="21" center="[47, 19]" style="height: 600px")
+        marker(
+          ng-repeat="marker in main.markers"
+          id="{{ marker.id }}"
+          position="{{ marker.position }}"
+          icon="{{ marker.icon }}"
+          label="{{ marker.label }}"
+          on-click="main.showMarkerInfo(event, marker)"
+          )
+        //- info-window(
+        //-   ng-repeat="marker in main.map.markers"
+        //-   id="marker-{{ marker.id }}-info"
+        //-   )
+        //-   div(ng-non-bindable="")
+        //-     h4 {{ marker.data }}
+        shape(
+          ng-repeat="polyline in main.polylines"
+          name="{{ polyline.name }}"
+          path="{{ polyline.path }}"
+          stroke-color="{{ polyline.strokeColor }}"
+          stroke-opacity="{{ polyline.strokeOpacity }}"
+          stroke-weight="{{ polyline.strokeWeight }}"
+          geodesic="{{ polyline.geodesic }}"
+        )
+
 
