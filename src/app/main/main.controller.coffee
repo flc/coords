@@ -1,7 +1,9 @@
 angular.module "app"
 
 
-.controller "MainCtrl", ($scope, $interval, $timeout, _, NgMap, MapUtils) ->
+.controller "MainCtrl", (
+  $scope, $interval, $timeout, _, moment, NgMap, MapUtils
+) ->
   'ngInject'
   vm = this
 
@@ -165,12 +167,20 @@ angular.module "app"
     body = []
     prevRow = null
     for row, i in results.data[1..]
-      distance = 0
+      distance = duration = speed_km = 0
+
       if prevRow
         p1 = new google.maps.LatLng(prevRow[0], prevRow[1])
         p2 = new google.maps.LatLng(row[0], row[1])
         distance = google.maps.geometry.spherical.computeDistanceBetween(p1, p2)
-      row.push(distance)
+        m1 = moment(prevRow[2])
+        m2 = moment(row[2])
+        duration = moment.duration(m2.diff(m1)).seconds()
+        if duration
+          speed_ms = distance / duration
+          speed_km = speed_ms / 3.6
+
+      row.push [distance, duration, speed_km]...
       body.push
         isSelected: true
         data: row
@@ -179,10 +189,12 @@ angular.module "app"
       prevRow = row
 
     header = results.data[0]
-    header.push("distance (m)")
+    header.push ["distance (m)", "duration (sec)", "speed (km/h)"]...
     vm.tableData =
       'header': header
       'body': body
+
+    console.log vm.tableData
     genMarkers()
     genPolylines()
     vm.tabs.activeTab = "table"
