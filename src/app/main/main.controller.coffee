@@ -178,7 +178,7 @@ angular.module "app"
         duration = moment.duration(m2.diff(m1)).seconds()
         if duration
           speed_ms = distance / duration
-          speed_km = speed_ms / 3.6
+          speed_km = speed_ms * 3.6
 
       row.push [distance, duration, speed_km]...
       body.push
