@@ -175,7 +175,7 @@ angular.module "app"
         distance = google.maps.geometry.spherical.computeDistanceBetween(p1, p2)
         m1 = moment(prevRow[2])
         m2 = moment(row[2])
-        duration = moment.duration(m2.diff(m1)).seconds()
+        duration = m2.diff(m1, 'seconds')
         if duration
           speed_ms = distance / duration
           speed_km = speed_ms * 3.6
