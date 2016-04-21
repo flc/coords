@@ -52,6 +52,28 @@
                     td {{ row.data[5] | number:0 }}
                     td {{ row.data[6] | number:2 }}
 
+        div(data-title="Polyline" name="polyline" bs-pane)
+          br
+          div Encoded polyline:
+            textarea.form-control(
+              rows="5"
+              ng-model="main.encodedPolyline"
+              name="encodedPolyline"
+            )
+          br
+          div
+            button.btn.btn-primary(
+              type="button"
+              ng-click="main.decodePolyline()"
+              title="Decode"
+              )
+              span &nbsp;Decode
+          div
+            br
+            ul.list-unstyled(ng-repeat="coords in main.decodedPolylineCoords")
+              li {{ coords.lat() }}, {{ coords.lng() }}
+          br
+
         div(data-title="Options" name="options" bs-pane)
           br
           form(role="form")

@@ -94,6 +94,15 @@ angular.module "app"
           s.setVisible(visible)
       return
 
+  updateEncodedPolyline = ->
+    NgMap.getMap().then (map) ->
+      if map.shapes
+        path = map.shapes[0].getPath()
+        vm.encodedPolyline = google.maps.geometry.encoding.encodePath(path)
+
+  decodePolyline = ->
+    vm.decodedPolylineCoords = google.maps.geometry.encoding.decodePath(vm.encodedPolyline)
+
   getBounds = (onlySelected) ->
     coords = []
     if onlySelected
@@ -201,6 +210,7 @@ angular.module "app"
     $timeout ->
       fitBounds()
       updateMarkerVisibility()
+      updateEncodedPolyline()
 
   simulateStart = ->
     # vm.deselectAll()
@@ -307,10 +317,14 @@ angular.module "app"
       markers: []
       polylines: []
 
+    vm.polylines = []
+    vm.markers = []
+
     $scope.$watch (->
       vm.options.mapItems
     ), (value) ->
       updateMarkerVisibility()
+      updateEncodedPolyline()
       updatePolylineVisibility()
 
      # scope functions
@@ -325,6 +339,8 @@ angular.module "app"
     vm.simulateStop = simulateStop
     vm.getSelected = getSelected
     vm.updateMarkerVisibility = updateMarkerVisibility
+    vm.updateEncodedPolyline = updateEncodedPolyline
+    vm.decodePolyline = decodePolyline
     vm.fitBounds = fitBounds
     vm.showMarkerInfo = showMarkerInfo
     vm.calcDistanceSelected = calcDistanceSelected
